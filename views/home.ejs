@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+
+    <%- include('./navbar.ejs'); %>
+
+    <div class="container my-3">
+      <h1 class="text-center">Home</h1>
+      <div class="row">
+        <div class="col-sm-12">
+          <h5 style="display: inline;">Hello <%= uname %></h5>
+          <a class="float-right" href="/users/logout">Logout</a>
+        </div>
+      </div>
+      
+    <a href="/verify">Verify your email</a>
+    
+    </div>
+
+    <div class="container">
+      <div class="bg-dark text-white p-3 mb-3">
+        <h3 style="display: inline;">Created Classes</h3>
+        <a class="float-right" href="/users/home/cc" target="_blank">Create a class</a>
+      </div>
+     
+      <div class="row my-4">
+        <div class="col-sm-12">
+          <div class="card-columns">
+            <% for(var i=0; i < temp.length; i++) { %>
+            <div class="card bg-light text-center">
+              <h5 class="card-header"><a href="/users/home/cc/crpage/<%= temp[i].id %>" target="_blank"> <%= temp[i].name %> </a></h5>
+              <div class="card-body">
+                <p class="card-text">Class-ID:</p>
+                <p class="card-text"><%= temp[i].id %></p>
+              </div>
+            </div>
+            <% } %>
+          </div>
+        </div>      
+      </div> 
+    </div>
+
+    <div class="container">
+      <div class="bg-dark text-white p-3 mb-3">
+        <h3 style="display: inline;">Joined Classes</h3>
+          <a class="float-right" href="/users/home/jc" target="_blank">Join a class</a>
+      </div>
+
+      <div class="row my-4">
+        <div class="col-sm-12">       
+            <div class="card-columns">
+              <% for(var i=0; i < jclass.length; i++) { %>
+              <div class="card bg-light text-center">
+                <h5 class="card-header"><a href="/users/home/jc/jrpage/<%= jclass[i].id %>" target="_blank"> <%= jclass[i].name %></a></h5>
+                <div class="card-body text-center">
+                  <p class="card-text">Class-ID:</p>
+                  <p class="card-text"><%= jclass[i].id %></p>
+                </div>
+              </div>
+              <% } %>
+            </div>
+        </div>
+      </div>      
+
+    </div>
+
+  </body>
+</html>

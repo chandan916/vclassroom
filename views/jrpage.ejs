@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Joined Class</title>
+  </head>
+  <body>
+    <%- include('./navbar.ejs'); %>
+    <h3>Your Joined class</h3>
+    <ul>
+      <% if (typeof errors != 'undefined') { %> <% errors.forEach(error => { %>
+      <li><%= error.message %></li>
+      <% }) %> <% } %>
+    </ul>
+
+    <a href="">Create online class</a>
+
+    <div class="container">
+      <table class="table">
+        <tr>
+            <thead class="thead-dark">
+                <th>Student name</th>
+                <th>Student attendance</th>
+                <th>Student Assignment Link</th>
+            </thead>
+        </tr>
+        <% for(var i=0; i < classtable.length; i++) { %>
+          <tr>
+            <% if(classtable[i].name) {%>
+            <td> <%= classtable[i].name %>  </td>
+              <% if(classtable[i].id==usid) { %>
+            <td><%= classtable[i].attendace %></td>
+            <td>
+              <% for(var j=0; j < classtable[i].assingment.length; j++) { %>
+                <p><%= classtable[i].assingment[j].desc %></p>
+              <a href="<%= classtable[i].assingment[j].url %>" target="_blank"> Click to download</a> 
+              <% }   %>
+            </td>
+            <% } %>
+
+            <% } %>
+          </tr>
+       <% } %>
+    </table>
+    </div>
+    
+
+    <div class="container">
+      <table class="table">
+        <tr>
+            <thead class="thead-dark">
+              <th>Assignment Assigned</th>
+              <th>Upload</th>
+            </thead>
+          </tr>
+          <% for(var i=0; i < classing.length; i++) { %>
+          <tr>
+            <% if(classing[i]) { %>
+            <tbody>
+            <td><%= classing[i] %></td>
+            <td>
+              <form  method="POST" action="/uploadassignment/<%=classid %>/<%= classing[i] %>" enctype="multipart/form-data">
+                <input type="file" name="assignment"/>
+                <input type="submit" name="btn_upload_profile_pic" value="Upload" />
+              </form>
+            </td>
+          </tbody>
+          <% } %>
+          </tr>
+          <% } %>
+        </table>
+    </div>
+    
+
+  </body>
+</html>
