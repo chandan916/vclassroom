@@ -14,6 +14,11 @@
       <li><%= error.message %></li>
       <% }) %> <% } %>
     </ul>
+    <% if(typeof (messages.errmsg) != 'undefined') { %>
+      <div class="alert alert-success text-center">
+        <p><strong><%= messages.errmsg %></strong></p>
+         </div>	
+      <% } %>
     <div class="container">
       <h1>Join a class</h1>
     
@@ -28,15 +33,7 @@
           required
         />
       </div>
-      <div class="form-group"> 
-        <input class="form-control"
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Your name"
-          required
-        />
-      </div>
+  
       <div class="form-group">
         <input class="form-control"
           type="text"
@@ -52,6 +49,6 @@
     </form>
 
     </div>
-    
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>

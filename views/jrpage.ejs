@@ -9,16 +9,16 @@
   </head>
   <body>
     <%- include('./navbar.ejs'); %>
-    <h3>Your Joined class</h3>
-    <ul>
-      <% if (typeof errors != 'undefined') { %> <% errors.forEach(error => { %>
-      <li><%= error.message %></li>
-      <% }) %> <% } %>
-    </ul>
 
-    <a href="">Create online class</a>
+    <% if(typeof messages.msg != 'undefined') { %>
+      <div class="alert alert-success text-center">
+        <p><strong><%= messages.msg %></strong></p>
+         </div>	
+      <% } %>
 
     <div class="container">
+      <h3 class="text-center">Your Joined class</h3>
+    <a class="float-right" href="/videoconf/<%= classid %>" target="_blank">Join online class</a>
       <table class="table">
         <tr>
             <thead class="thead-dark">
@@ -32,7 +32,11 @@
             <% if(classtable[i].name) {%>
             <td> <%= classtable[i].name %>  </td>
               <% if(classtable[i].id==usid) { %>
-            <td><%= classtable[i].attendace %></td>
+            <td>
+              <% for(var j=0; j < classtable[i].attendance.length; j++) { %>
+                <p><%= classtable[i].attendance[j].date %>( <%= classtable[i].attendance[j].att %>) </p>
+              <% } %>
+            </td>
             <td>
               <% for(var j=0; j < classtable[i].assingment.length; j++) { %>
                 <p><%= classtable[i].assingment[j].desc %></p>
@@ -74,6 +78,6 @@
         </table>
     </div>
     
-
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>

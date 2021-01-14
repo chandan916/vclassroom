@@ -15,6 +15,13 @@
       <% }) %> <% } %>
     </ul>
 
+      <% if(typeof message != 'undefined'){ %>
+        <div class="alert alert-danger text-center">
+          <p><strong><%= message %></strong></p>
+           </div>	
+        <% } %>
+    
+
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-4 mx-auto my-4">
@@ -61,5 +68,6 @@
       </div>
       
     </div>
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>

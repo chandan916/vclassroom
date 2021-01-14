@@ -9,15 +9,20 @@
   </head>
   <body>
     <%- include('./navbar.ejs'); %>
-    <h3>Your created class</h3>
+    
     <ul>
       <% if (typeof(msges) != 'undefined') { %> 
       <li><%= msges %></li>
        <% } %>
     </ul>
-    <a href="">Create online class</a>
+    <div class="container">
+      
+    </div>
+    
     
     <div class="container table-responsive">
+      <h3 class="text-center">Your created class</h3>
+      <a class="float-right" href="/videoconfcc/<%= classid %>" target="_blank">Create online class</a>
       <table class="table">
         <tr>
             <thead class="thead-dark">
@@ -26,16 +31,17 @@
                 <th>Student Submission</th>
             </thead>
         </tr>
-        <% for(var i=0; i < classtable.length; i++) { %>
-          <tr>
+        
+        <% for(let i=0; i < classtable.length; i++) { %>
+          <tr>         
             <td> <%= classtable[i].name %>  </td>
               <td>
-                <% for(var j=0; j < classtable[i].attendance.length; j++) { %>
+                <% for(let j=0; j < classtable[i].attendance.length; j++) { %>
                   <p><%= classtable[i].attendance[j].date %>( <%= classtable[i].attendance[j].att %>) </p>
                 <% }   %>         
               </td>
             <td>
-              <% for(var j=0; j < classtable[i].assingment.length; j++) { %>
+              <% for(let j=0; j < classtable[i].assingment.length; j++) { %>
                 <p><%= classtable[i].assingment[j].desc %></p>
               <a href="<%= classtable[i].assingment[j].url %>" target="_blank"> Click to download</a> 
               <% }   %>
@@ -43,9 +49,16 @@
           </tr>
        <% } %>
     </table>
+    <% if (classtable.length == 0) {%>
+      <div class="alert alert-danger text-center">
+        <p><strong>No student in the class</strong></p>
+      </div>
+      
+      <% } %>
     </div>
     
-    <div class="container">
+    <div class="container my-3">
+      <h4>Take Attendance</h4>
       <table class="table">
         <tr>
             <th>Student Name</th>
@@ -60,7 +73,7 @@
           <td><input type="datetime-local" name="data" value="" /></td>
         </tr>
   
-        <% for(var i=0; i < classtable.length; i++) { %>
+        <% for(let i=0; i < classtable.length; i++) { %>
         <tr>
           <td> <%= classtable[i].name %> </td>
            <td>   
@@ -72,34 +85,40 @@
         <% } %>
       </tr>
       <tr>
-        <td><input type="submit" value="Submit"> </td>
+        <td><input class="btn btn-primary" type="submit" value="Submit"> </td>
       </tr>
     </form>
       </table>
     </div>
     
 
-    <div class="container">
+    <div class="container my-3">
+      <h4>Assignment</h4>
       <table class="table">
-        <tr><thead><th>Assingment assinged by you</th></thead></tr>
+        <tr><thead><th>Assignment assinged by you</th></thead></tr>
         <% for(var i=0; i < classing.length; i++) { %>
         <tr>
           <td>
-          <%= classing[i] %>
+            <%= i+1 %>. <%= classing[i] %>
         </td>
       </tr>
       <% }   %>
       </table>
       
+      <% if (classing.length == 0) {%>
+        <strong class="text-center"><p>No Assignment assigned</p></strong>
+        <% } %>
+
       <form action = "/users/home/cc/crpage/assignment/<%= classid %>" method = "post">
       <h4>Assign Assigment</h4> 
       <textarea class="form-control" rows = "5"  name = "description">
       </textarea>
       <br/>
-      <input type = "submit" value = "submit" />
+      <input class="btn btn-outline-success" type = "submit" value = "submit" />
       </form>
 
+      
     </div>
-
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>

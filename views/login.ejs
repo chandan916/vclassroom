@@ -10,23 +10,25 @@
   <body>
     <%- include('./navbar.ejs'); %>
     
-    <ul>
       <% if (typeof errors != 'undefined') { %> <% errors.forEach(error => { %>
-      <li><%= error.message %></li>
+      <div class="alert alert-success text-center">
+        <p><strong><%=error.message   %></strong></p>
+         </div>	
       <% }) %> <% } %>
-    </ul>
+  
 
-    <ul>
       <% if(messages.success_msg) { %>
-      <li><%= messages.success_msg %></li>
+      <div class="alert alert-danger text-center">
+        <p><strong><%=messages.success_msg%></strong></p>
+         </div>	
       <% } %>
-    </ul>
 
-    <ul>
       <% if (messages.error) { %>
-      <li><%= messages.error %></li>
+      <div class="alert alert-danger text-center">
+        <p><strong><%=messages.error%></strong></p>
+         </div>	
       <% } %>
-    </ul>
+    
 
     <div class="container-fluid">
       <div class="row">
@@ -69,6 +71,6 @@
       
  
     </div>
-   
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>

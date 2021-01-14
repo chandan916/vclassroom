@@ -21,9 +21,14 @@
       </div>
       
     <a href="/verify">Verify your email</a>
+
+    <% if(typeof messages.verify != 'undefined') { %>
+      <div class="alert alert-success text-center">
+        <p><strong><%= messages.verify %></strong></p>
+         </div>	
+      <% } %>
     
     </div>
-
     <div class="container">
       <div class="bg-dark text-white p-3 mb-3">
         <h3 style="display: inline;">Created Classes</h3>
@@ -70,6 +75,6 @@
       </div>      
 
     </div>
-
+    <%- include('./bootstrapjsfile.ejs'); %>
   </body>
 </html>
