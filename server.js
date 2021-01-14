@@ -12,7 +12,7 @@ const app = express();
 const cryptoRandomString = require('crypto-random-string');
 
 
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 
 const SESConfig = {
   apiVersion: "2010-12-01",
@@ -26,29 +26,20 @@ var ses = new AWS.SES();
 
 
 const initializePassport = require("./passportConfig");
-const { async } = require("crypto-random-string");
 
 initializePassport(passport);
 
-// Middleware
-
-// Parses details from a form
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
 app.use(
   session({
-    // Key we want to keep secret which will encrypt all of our information
     secret: process.env.SESSION_SECRET,
-    // Should we resave our session variables if nothing has changes which we dont
     resave: false,
-    // Save empty value if there is no vaue which we do not want to do
     saveUninitialized: false
   })
 );
-// Funtion inside passport which initializes passport
 app.use(passport.initialize());
-// Store our variables to be persisted across the whole session. Works with app.use(Session) above
 app.use(passport.session());
 app.use(flash());
 
@@ -167,12 +158,16 @@ app.get('/verify',(req,res)=>{
 ses.verifyEmailIdentity(params, function(err, data) {
   if(err) {
       console.log(err);
+      req.flash("verify","E-mail id does not exist");
+      res.redirect('/users/home');
   } 
   else {
       console.log(data);
+      req.flash("verify","A verification mail has been sent to your E-mail");
+      res.redirect('/users/home');
   } 
    });
-res.redirect('/users/home');
+  
 });
 
 
@@ -206,6 +201,7 @@ app.post('/uploadassignment/:classid/:classing',upload,(req, res) => {
           res.status(500).send(error)
       }
       if(data){
+        let msg;
         let p=`select userid from users where email='${req.user.email}'`;
         const temp4=pool.query(p,(err,res)=>{
           if(err){console.log(err.message);}
@@ -224,20 +220,24 @@ app.post('/uploadassignment/:classid/:classing',upload,(req, res) => {
         cross join jsonb_array_elements(l.classinfo->'studentinfo') with ordinality arr1(elems, pos1)
         where (elems->>'id')::text = '${res.rows[0].userid}' and m.classid='${classid}'`;
         const temp=pool.query(v,(err,res)=>{
-          if(err){console.log("assignment cannot be submited:",err.message);}
-          if(res){console.log("assignment submitted");}
+          if(err){console.log("assignment cannot be submited:",err.message);
+                  msg=err.message;
+                    }
+          if(res){console.log("assignment submitted");
+                      msg="assignment submitted successfully";
+                  }
         });
         });
         
       console.log(data.Location);
-      res.redirect('/users/home');
-      }
-      
+      req.flash("msg","assignment submitted");
+      res.redirect(`/users/home/jc/jrpage/${classid}`);
+      }      
   });
 });
 
 
-app.get("/users/home", checkNotAuthenticated, async(req,res)=>{
+app.get("/users/home", checkNotAuthenticated, (req,res)=>{
   const email=req.user.email;
   let uname=req.user.name;
   console.log("resquest for authentication",req.isAuthenticated());
@@ -245,7 +245,7 @@ app.get("/users/home", checkNotAuthenticated, async(req,res)=>{
     console.log("created classes",results.rows[0].cclass);
 
         let rstr=`select userinfo->'jclassid' as jclass from users where email=$1`;
-        const h=await pool.query(rstr,[email],(err,result)=>{
+        const h= pool.query(rstr,[email],(err,result)=>{
           if(err){console.log("join class display error:",err.message);}
           if(result){
             console.log("joined classes are:",result.rows[0].jclass);
@@ -256,7 +256,7 @@ app.get("/users/home", checkNotAuthenticated, async(req,res)=>{
   
 });
 
-app.get("/users/home/cc",async(req,res)=>{
+app.get("/users/home/cc",(req,res)=>{
   res.render('ccform.ejs');
 });
 
@@ -265,26 +265,31 @@ app.get("/users/home/jc",(req,res)=>{
 });
 
 
-app.post("/users/home/jc/jcform",async(req,res)=>{
+app.post("/users/home/jc/jcform",(req,res)=>{
   let classid=req.body.cid;
   let userid=req.user.userid;
   let srollno=req.body.rollno;
   let a1=req.user.email;
-  let sname=req.body.name;
-  const temp=await pool.query(`select classid,classname from classtable WHERE classid = $1`,[classid],async (err,results)=>{
+  let sname=req.user.name;
+  const temp= pool.query(`select classid,classname from classtable WHERE classid = $1`,[classid],(err,results)=>{
     if(err){console.log("join class error:",err.message);
-      res.render('index.ejs');
+      req.flash("errmsg","No such class exist");
+      res.redirect('/users/home');
     }
-    if(results){
+    if(results.rows.length==0){
+      req.flash("errmsg","No such class exist");
+      res.redirect('/users/home/jc');
+    }
+    else{
       let p=`update classtable set classinfo=jsonb_insert(classinfo,'{ studentinfo,9999 }','{"id":"${userid}","rollno":"${srollno}","email":"${a1}","name":"${sname}","attendance":[],"assingment":[]}') where classid='${classid}'`;
-        const v=await pool.query(p,(err,r)=>{
+        const v=pool.query(p,(err,r)=>{
           if(err){console.log("insert command fails during join class");}
         if(r){
           console.log("insert command successfull");
         }
         });
         let z=`update users set userinfo=jsonb_insert(userinfo,'{jclassid,99999}','{"id":"${classid}","name":"${results.rows[0].classname}","attendace":"","assingment":[]}') where email='${a1}'`;
-        const t=await pool.query(z,(err,result)=>{
+        const t=pool.query(z,(err,result)=>{
           if(err){
             console.log("join class error:",err.message);
             res.render('index.ejs');
@@ -298,32 +303,25 @@ app.post("/users/home/jc/jcform",async(req,res)=>{
   }); 
 });
 
-app.get("/users/home/jc/jrpage/:classid",async(req,res)=>{
-let classid=req.params.classid;
-let usid=req.user.userid;
-let p=`select userid from users where email='${req.user.email}'`;
-const temp4=pool.query(p,(err,res)=>{
-  if(err){console.log(err.message);}
-  if(res){
-    console.log("res is:",res.rows[0].userid);
-    usid=res.rows[0].userid;
-  }});
-let str=`select * from classtable where classid='${classid}'`;
-const temp=await pool.query(str,async(err,result)=>{
-  if(err){
-    console.log("Error in select command while jcclasss!!:",err.message);
-  }
-  if(result){
-    res.render('jrpage.ejs',{classtable:result.rows[0].classinfo.studentinfo,classing:result.rows[0].classinfo.assingment,usid:usid,classid:classid});
-  }
-});
+app.get("/users/home/jc/jrpage/:classid",(req,res)=> {
+    let classid = req.params.classid;
+    let usid = req.user.userid;
+    let str = `select * from classtable where classid='${classid}'`;
+    const temp = pool.query(str, async (err, result) => {
+      if (err) {
+        console.log("Error in select command while jcclasss!!:", err.message);
+      }
+      if (result) {
+        res.render('jrpage.ejs', { classtable: result.rows[0].classinfo.studentinfo, classing: result.rows[0].classinfo.assingment, usid: usid, classid: classid });
+      }
+    });
 
-});
+  });
 
-app.get("/users/home/cc/crpage/:classid",async(req,res)=>{
+app.get("/users/home/cc/crpage/:classid",(req,res)=>{
   let classid=req.params.classid;
   let str2=`select classinfo from classtable where classid='${classid}'`;
-  const temp=await pool.query(str2,(err,result)=>{
+  const temp= pool.query(str2,(err,result)=>{
     if(err){
       console.log("Error in select command while crclasss!!:",err.message);
     }
@@ -336,11 +334,11 @@ app.get("/users/home/cc/crpage/:classid",async(req,res)=>{
 
 
 
-app.post("/users/home/cc/crpage/assignment/:classid",async(req,res)=>{
+app.post("/users/home/cc/crpage/assignment/:classid",(req,res)=>{
   let assignment=req.body.description;
   let classid=req.params.classid;
   let p=`update classtable set classinfo=jsonb_insert(classinfo,'{assingment,9999}','"${assignment}"') where classid='${classid}'`;
-  const temp=await pool.query(p,async(err,results)=>{
+  const temp=pool.query(p,(err,results)=>{
     if(err){console.log("error during assingment sub:",err.message);}
     if(results){
                 console.log("successfully entered assignment");
@@ -353,12 +351,11 @@ app.post("/users/home/cc/crpage/assignment/:classid",async(req,res)=>{
                               console.log("email is ",result.rows[0].res[i].email);
                               arr.push(result.rows[0].res[i].email); }
         var ses = new AWS.SES();
-        var email   = "playhd789@gmail.com";
         
         var params = {
-          Source: 'playhd789@gmail.com',
+          Source: req.user.email,
           Destination: { ToAddresses:arr },
-          ReplyToAddresses: [ 'playhd789@gmail.com'],
+          ReplyToAddresses: [ req.user.email],
           Message: {
               Body: {
                   Html: {
@@ -384,23 +381,31 @@ app.post("/users/home/cc/crpage/assignment/:classid",async(req,res)=>{
   res.redirect(`/users/home/cc/crpage/${classid}`);  
 });
 
-app.post("/users/home/crpage/attendance/:classid",async(req,res)=>{
+app.post("/users/home/crpage/attendance/:classid",(req,res)=>{
   let classid=req.params.classid;
   let data=req.body.data;
-  let msges="sucessfully";
-  const temp=await pool.query(`select classinfo->'studentinfo' as stuinfo from classtable WHERE classid = $1`,[classid],async (err,results)=>{
+  let array=[];
+  if(req.body.arr ==='present' ||req.body.arr==='absent'){
+    array.push(req.body.arr);
+  }
+  else{
+    for(let i=0;i<req.body.arr.length;i++){
+      array.push(req.body.arr[i]);
+    }
+  }
+  console.log("arrayy is :",array);
+
+  const temp=pool.query(`select classinfo->'studentinfo' as stuinfo from classtable WHERE classid = $1`,[classid],async(err,results)=>{
     if(err){console.log("join class error:",err.message);
       res.render('index.ejs');
     }
     if(results){
       let p=0;
-      console.log(results.rows[0].stuinfo[0].id);
-      for(let val of req.body.arr) {
+      console.log("id iis:",results.rows[0].stuinfo[0].id);
+      for( val of array) {
+        console.log("val is:",val);
         let a=results.rows[0].stuinfo[p].id;
-        let k=`update 
-        classtable m 
-        set classinfo = 
-        jsonb_set(
+        let k=`update classtable m set classinfo = jsonb_set(
            m.classinfo::jsonb, 
            array['studentinfo',(pos1-1)::text,'attendance',999::text],
            '{"date":"${data}","att":"${val}"}'::jsonb 
@@ -410,9 +415,9 @@ app.post("/users/home/crpage/attendance/:classid",async(req,res)=>{
         where (elems->>'id')::text = '${a}' and m.classid='${classid}'`;
         const v=await pool.query(k,(err,r)=>{
           if(err){console.log("insert command fails during join class");}
-          if(r){   console.log("insert command successfull");  }
-           });
-        p++;
+          if(r){   console.log("insert command successfull"); }
+           });  
+           p++;
         }
       }  
   res.redirect(`/users/home/cc/crpage/${classid}`);
@@ -420,19 +425,19 @@ app.post("/users/home/crpage/attendance/:classid",async(req,res)=>{
 
 });
 
-app.post("/users/home/cc/classf",async(req,res)=>{
+app.post("/users/home/cc/classf",(req,res)=>{
   let rs=cryptoRandomString({length: 10, characters: 'abclonh'});
   let a1=req.user.email;
   let cname=req.body.name;
   let z=`update users set userinfo=jsonb_insert(userinfo,'{cclassid,9999}','{"id":"${rs}","name":"${cname}"}') where email='${a1}'`;
-  const temp2=await pool.query(z,(err,result)=>{
+  const temp2= pool.query(z,(err,result)=>{
     if(err){
       console.log("create class error:",err.message);
     }
     if(result){console.log("successfully inserted!!!");}
   });
   let k=`insert into classtable(classid,classname,classowner,classinfo) values($1,$2,$3,'{"studentinfo":[],"assingment":[]}')`;
-  const temp=await pool.query(k,[rs,cname,a1],async(err,result)=>{
+  const temp= pool.query(k,[rs,cname,a1],(err,result)=>{
   if(err){
     console.log(err.message);
   }
@@ -441,4 +446,27 @@ app.post("/users/home/cc/classf",async(req,res)=>{
   }
 });
 res.redirect('/users/home');
+});
+
+app.get("/videoconf/:classid",(req,res)=>{
+  let name=req.user.name;
+  let email=req.user.email;
+  let classid=req.params.classid;
+  res.render('videoconf.ejs',{name:name,email:email,classid:classid});
+});
+
+app.get("/videoconfcc/:classid",(req,res)=>{
+  let name=req.user.name;
+  let email=req.user.email;
+  let classid=req.params.classid;
+  let str2=`select classinfo from classtable where classid='${classid}'`;
+  const temp= pool.query(str2,(err,result)=>{
+    if(err){
+      console.log("Error in select command while crclasss!!:",err.message);
+    }
+    if(result){
+      console.log(result.rows[0].classinfo.studentinfo);
+      res.render('videoconfcc.ejs',{classtable:result.rows[0].classinfo.studentinfo,classid:classid,name:name,email:email});
+    }
+  });
 });
