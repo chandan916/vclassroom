@@ -15,11 +15,13 @@ A Web Portal which facilitates the online classroom experience within the studen
 
 
 <h3>E-R Diagram</h3></br>
-![image](https://user-images.githubusercontent.com/46419383/137621010-797b662e-b206-4705-a526-10f17968e7df.png)</br>
+![image](https://user-images.githubusercontent.com/46419383/137621521-8866487f-ff8e-444b-96c9-1195c4e79496.png)
+
+</br>
 
 <h3>Home Page</h3>
 </br>
-![image](https://user-images.githubusercontent.com/46419383/137621025-8b24a535-20cc-407b-9a2c-0aaa0a107dce.png)</br>
+![image](https://user-images.githubusercontent.com/46419383/137621533-1bc495bc-4878-4d8d-aac3-cd2bc93d4d4f.png)
 
 ![image](https://user-images.githubusercontent.com/46419383/137621037-0d7044a8-ae81-47e4-8f50-29699662deaa.png)</br>
 
